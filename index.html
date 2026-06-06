@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MindForge — English &amp; Critical Thinking Test</title>
+<style>
+  :root{
+    --bg-0:#0b0f1a;
+    --bg-1:#121a30;
+    --glass:rgba(255,255,255,.06);
+    --glass-brd:rgba(255,255,255,.12);
+    --text:#eaf0ff;
+    --muted:#9aa6c4;
+    --brand:#7c5cff;
+    --brand-2:#19c3fb;
+    --green:#22d39a;
+    --green-glow:rgba(34,211,154,.45);
+    --red:#ff5d6c;
+    --red-glow:rgba(255,93,108,.45);
+    --gold:#ffd166;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--text);
+    background:radial-gradient(1200px 800px at 12% -10%,#1c2a52 0%,transparent 55%),
+               radial-gradient(1000px 700px at 110% 10%,#3a1d63 0%,transparent 50%),
+               linear-gradient(160deg,var(--bg-0),var(--bg-1));
+    min-height:100vh;
+    display:flex;flex-direction:column;
+    padding:24px;
+    overflow-x:hidden;
+  }
+
+  /* floating ambient orbs */
+  .orb{position:fixed;border-radius:50%;filter:blur(60px);opacity:.5;z-index:0;animation:float 14s ease-in-out infinite}
+  .orb.a{width:340px;height:340px;background:#6d3bff;top:-80px;left:-60px}
+  .orb.b{width:300px;height:300px;background:#0ea5e9;bottom:-100px;right:-40px;animation-delay:-5s}
+  .orb.c{width:220px;height:220px;background:#22d39a;top:50%;left:60%;animation-delay:-9s;opacity:.25}
+  @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(30px,-30px)}}
+
+  .app{
+    position:relative;z-index:1;
+    width:100%;max-width:760px;margin:auto;
+    background:var(--glass);
+    border:1px solid var(--glass-brd);
+    border-radius:24px;
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    box-shadow:0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08);
+    padding:34px 34px 30px;
+    animation:rise .6s cubic-bezier(.2,.8,.2,1) both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .logo{
+    width:42px;height:42px;border-radius:12px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    display:grid;place-items:center;font-size:22px;
+    box-shadow:0 8px 24px rgba(124,92,255,.5);
+  }
+  .brand h1{font-size:20px;letter-spacing:.5px}
+  .brand span{color:var(--brand-2)}
+  .tagline{color:var(--muted);font-size:13px;margin:2px 0 22px 54px}
+
+  /* ===== Start screen ===== */
+  .start{text-align:center;padding:18px 6px 8px}
+  .start .big{font-size:30px;font-weight:800;line-height:1.2;margin-bottom:10px;
+    background:linear-gradient(90deg,#fff,#bcd2ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .start p{color:var(--muted);max-width:460px;margin:0 auto 22px;font-size:15px;line-height:1.6}
+  .pills{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:26px}
+  .pill{font-size:12px;padding:7px 13px;border-radius:999px;border:1px solid var(--glass-brd);
+    background:rgba(255,255,255,.04);color:var(--muted)}
+  .pill b{color:var(--text)}
+
+  .btn{
+    cursor:pointer;border:none;outline:none;font-weight:700;font-size:15px;
+    color:#fff;padding:14px 30px;border-radius:14px;
+    background:linear-gradient(135deg,var(--brand),var(--brand-2));
+    box-shadow:0 12px 30px rgba(124,92,255,.45);
+    transition:transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    letter-spacing:.3px;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 18px 40px rgba(124,92,255,.6);filter:brightness(1.05)}
+  .btn:active{transform:translateY(0) scale(.98)}
+  .btn.ghost{background:transparent;border:1px solid var(--glass-brd);box-shadow:none;color:var(--text)}
+  .btn.ghost:hover{background:rgba(255,255,255,.06)}
+
+  /* ===== Quiz header ===== */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:14px}
+  .counter{font-size:13px;color:var(--muted)}
+  .counter b{color:var(--text);font-size:15px}
+  .cat-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;
+    padding:5px 11px;border-radius:999px}
+  .cat-english{background:rgba(25,195,251,.15);color:var(--brand-2);border:1px solid rgba(25,195,251,.35)}
+  .cat-critical{background:rgba(255,209,102,.15);color:var(--gold);border:1px solid rgba(255,209,102,.35)}
+
+  .score-chip{display:flex;align-items:center;gap:7px;font-weight:800;font-size:15px;
+    padding:8px 14px;border-radius:12px;background:rgba(34,211,154,.12);
+    border:1px solid rgba(34,211,154,.3);color:var(--green)}
+
+  .progress{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:26px}
+  .progress > i{display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,var(--brand),var(--brand-2));
+    transition:width .5s cubic-bezier(.2,.8,.2,1)}
+
+  .question{font-size:21px;font-weight:700;line-height:1.45;margin-bottom:22px}
+
+  .options{display:flex;flex-direction:column;gap:13px}
+  .opt{
+    position:relative;cursor:pointer;text-align:left;
+    border:1px solid var(--glass-brd);
+    background:rgba(255,255,255,.04);
+    color:var(--text);
+    padding:16px 18px;border-radius:14px;font-size:16px;
+    display:flex;align-items:center;gap:14px;
+    transition:transform .12s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .opt:hover:not(:disabled){background:rgba(255,255,255,.08);transform:translateX(4px);border-color:rgba(255,255,255,.25)}
+  .opt:disabled{cursor:default}
+  .key{flex:0 0 30px;height:30px;border-radius:9px;display:grid;place-items:center;
+    background:rgba(255,255,255,.08);font-weight:800;font-size:14px;color:var(--muted);transition:.2s}
+  .opt .mark{margin-left:auto;font-size:20px;opacity:0;transform:scale(.5);transition:.25s}
+
+  .opt.correct{background:rgba(34,211,154,.16);border-color:var(--green);
+    box-shadow:0 0 0 1px var(--green), 0 10px 30px var(--green-glow)}
+  .opt.correct .key{background:var(--green);color:#04110c}
+  .opt.correct .mark{opacity:1;transform:scale(1);color:var(--green)}
+  .opt.wrong{background:rgba(255,93,108,.14);border-color:var(--red);
+    box-shadow:0 0 0 1px var(--red), 0 10px 30px var(--red-glow);animation:shake .4s}
+  .opt.wrong .key{background:var(--red);color:#1a0306}
+  .opt.wrong .mark{opacity:1;transform:scale(1);color:var(--red)}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+  .explain{margin-top:0;padding:0 16px;border-radius:12px;font-size:14px;line-height:1.55;
+    background:rgba(255,255,255,.05);border-left:3px solid var(--brand-2);color:var(--muted);
+    opacity:0;max-height:0;overflow:hidden;transition:.4s}
+  .explain.show{opacity:1;max-height:220px;margin-top:16px;padding:13px 16px}
+  .explain b{color:var(--text)}
+
+  .footer{display:flex;justify-content:flex-end;margin-top:16px}
+  .next{display:none}
+  .next.show{display:inline-flex;animation:rise .35s both}
+
+  /* ===== Results ===== */
+  .result{text-align:center;padding:8px 6px}
+  .ring{width:170px;height:170px;margin:6px auto 18px;position:relative}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .num{position:absolute;inset:0;display:grid;place-items:center;flex-direction:column}
+  .ring .num b{font-size:44px;font-weight:900;line-height:1}
+  .ring .num small{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+  .verdict{font-size:26px;font-weight:800;margin-bottom:6px}
+  .result p{color:var(--muted);margin-bottom:24px}
+  .breakdown{display:flex;gap:12px;justify-content:center;margin-bottom:26px;flex-wrap:wrap}
+  .stat{background:rgba(255,255,255,.05);border:1px solid var(--glass-brd);border-radius:14px;
+    padding:14px 20px;min-width:120px}
+  .stat b{display:block;font-size:24px;font-weight:900}
+  .stat span{font-size:12px;color:var(--muted)}
+  .stat.good b{color:var(--green)} .stat.bad b{color:var(--red)} .stat.gold b{color:var(--gold)}
+
+  /* ===== Fireboy vs Watergirl — live battle arena ===== */
+  .arena{position:relative;height:142px;margin-top:14px;border-radius:18px;overflow:hidden;cursor:pointer;
+    background:
+      radial-gradient(120px 60px at 25% 100%,rgba(255,123,47,.18),transparent 70%),
+      radial-gradient(120px 60px at 75% 100%,rgba(25,195,251,.18),transparent 70%),
+      linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.24));
+    border:1px solid var(--glass-brd)}
+  .arena .ground{position:absolute;left:0;right:0;bottom:0;height:22px;
+    background:linear-gradient(180deg,rgba(124,92,255,.20),rgba(124,92,255,.02));
+    border-top:1px solid rgba(255,255,255,.10)}
+  .fighter{position:absolute;bottom:14px;left:20px;width:64px;height:108px;
+    transition:left .82s cubic-bezier(.45,.05,.35,1)}
+  .facing{position:relative;width:100%;height:100%;transition:transform .16s ease}
+  .facing.flip{transform:scaleX(-1)}
+  .action{width:100%;height:100%}
+  .fSvg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 5px 7px rgba(0,0,0,.45))}
+  .fSvg .leg-l,.fSvg .leg-r,.fSvg .arm-l,.fSvg .arm-r{transform-box:fill-box;transform-origin:top center}
+  .stars{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:15px;opacity:0;pointer-events:none}
+  .fighter.dizzy .stars{opacity:1;animation:starspin .7s linear infinite}
+  @keyframes starspin{from{transform:translateX(-50%) rotate(0)}to{transform:translateX(-50%) rotate(360deg)}}
+
+  .fighter.walking .action{animation:fwalk .34s linear infinite}
+  @keyframes fwalk{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .fighter.walking .leg-l{animation:legA .34s linear infinite}
+  .fighter.walking .leg-r{animation:legB .34s linear infinite}
+  @keyframes legA{0%,100%{transform:rotate(-20deg)}50%{transform:rotate(20deg)}}
+  @keyframes legB{0%,100%{transform:rotate(20deg)}50%{transform:rotate(-20deg)}}
+  .fighter.jump .action{animation:fjump .62s ease}
+  @keyframes fjump{0%{transform:translateY(0)}42%{transform:translateY(-42px)}56%{transform:translateY(-42px)}100%{transform:translateY(0)}}
+  .fighter.spin .action{animation:fspin .6s ease}
+  @keyframes fspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .fighter.lunge .action{animation:flunge .34s ease}
+  @keyframes flunge{0%{transform:translateX(0)}50%{transform:translateX(16px)}100%{transform:translateX(0)}}
+  .fighter.hurt .action{animation:fhurt .4s ease}
+  @keyframes fhurt{0%{transform:translateX(0) rotate(0)}30%{transform:translateX(-15px) rotate(-14deg)}100%{transform:translateX(0) rotate(0)}}
+  .fighter.punch .arm-r{animation:fpunch .32s ease}
+  @keyframes fpunch{0%,100%{transform:rotate(0)}45%{transform:rotate(-105deg)}}
+  .fighter.kick .leg-r{animation:fkick .32s ease}
+  @keyframes fkick{0%,100%{transform:rotate(0)}45%{transform:rotate(74deg)}}
+  .impact{position:absolute;transform:translate(-50%,-50%) scale(.4);font-size:24px;pointer-events:none;opacity:0;z-index:5}
+  .impact.go{animation:fimpact .5s ease forwards}
+  @keyframes fimpact{
+    0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-10deg)}
+    35%{opacity:1;transform:translate(-50%,-50%) scale(1.25) rotate(8deg)}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.55) rotate(0)}}
+
+  .hidden{display:none!important}
+
+  @media(max-width:560px){
+    body{padding:12px}
+    .app{padding:20px 15px;border-radius:18px}
+    .brand h1{font-size:18px}
+    .logo{width:38px;height:38px;font-size:20px}
+    .tagline{font-size:12px;margin:2px 0 16px 50px}
+    .start{padding:10px 2px 4px}
+    .start .big{font-size:22px}
+    .start p{font-size:14px;margin-bottom:18px}
+    .pills{gap:7px;margin-bottom:20px}
+    .btn{padding:13px 24px;font-size:14px}
+    .topbar{margin-bottom:12px;gap:8px}
+    .counter{font-size:12px}
+    .cat-tag{font-size:10px;padding:4px 9px}
+    .score-chip{font-size:14px;padding:7px 11px}
+    .progress{margin-bottom:18px}
+    .question{font-size:17px;margin-bottom:16px}
+    .options{gap:10px}
+    .opt{padding:13px 14px;font-size:15px;gap:11px}
+    .key{flex:0 0 26px;height:26px;font-size:13px}
+    .opt .mark{font-size:18px}
+    .explain.show{font-size:13px}
+    .ring{width:140px;height:140px}
+    .ring .num b{font-size:36px}
+    .verdict{font-size:22px}
+    .breakdown{gap:8px}
+    .stat{min-width:90px;padding:12px 14px}
+    .stat b{font-size:21px}
+    .arena{height:120px;margin-top:14px}
+    .fighter{width:50px;height:84px;bottom:12px}
+  }
+</style>
+</head>
+<body>
+  <div class="orb a"></div><div class="orb b"></div><div class="orb c"></div>
+
+  <main class="app">
+    <div class="brand">
+      <div class="logo">🧠</div>
+      <div>
+        <h1>Mind<span>Forge</span></h1>
+      </div>
+    </div>
+    <div class="tagline">Sharpen your English &amp; critical thinking</div>
+
+    <!-- ====== START ====== -->
+    <section id="start" class="start">
+      <div class="big">Are you ready to challenge your mind?</div>
+      <p>A timed-free test of <b>English mastery</b> and <b>critical thinking</b>.
+         Pick an answer — instantly see green for right, red for wrong, and the correct one revealed. One point per question.</p>
+      <div class="pills">
+        <span class="pill">📘 <b>English</b></span>
+        <span class="pill">🧩 <b>Critical Thinking</b></span>
+        <span class="pill">⚡ <b>Instant feedback</b></span>
+        <span class="pill">🏆 <b>Live score</b></span>
+      </div>
+      <button class="btn" id="startBtn">Start the Test →</button>
+    </section>
+
+    <!-- ====== QUIZ ====== -->
+    <section id="quiz" class="hidden">
+      <div class="topbar">
+        <div class="counter">Question <b id="qNow">1</b> / <span id="qTotal">10</span></div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="cat-tag" id="catTag">English</span>
+          <span class="score-chip">⭐ <span id="scoreNow">0</span></span>
+        </div>
+      </div>
+      <div class="progress"><i id="bar"></i></div>
+
+      <div class="question" id="qText">Question goes here</div>
+      <div class="options" id="opts"></div>
+      <div class="explain" id="explain"></div>
+
+      <div class="footer">
+        <button class="btn next" id="nextBtn">Next →</button>
+      </div>
+    </section>
+
+    <!-- ====== RESULT ====== -->
+    <section id="result" class="result hidden">
+      <div class="ring">
+        <svg width="170" height="170">
+          <circle cx="85" cy="85" r="74" stroke="rgba(255,255,255,.08)" stroke-width="14" fill="none"/>
+          <circle id="ringFill" cx="85" cy="85" r="74" stroke="url(#g)" stroke-width="14" fill="none"
+                  stroke-linecap="round" stroke-dasharray="465" stroke-dashoffset="465"
+                  style="transition:stroke-dashoffset 1.2s cubic-bezier(.2,.8,.2,1)"/>
+          <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#22d39a"/>
+          </linearGradient></defs>
+        </svg>
+        <div class="num"><div><b id="pct">0%</b><small id="ratio">0 / 10</small></div></div>
+      </div>
+      <div class="verdict" id="verdict">Nice work!</div>
+      <p id="subverdict">Here's how you did.</p>
+      <div class="breakdown">
+        <div class="stat good"><b id="rCorrect">0</b><span>Correct</span></div>
+        <div class="stat bad"><b id="rWrong">0</b><span>Wrong</span></div>
+        <div class="stat gold"><b id="rPoints">0</b><span>Points</span></div>
+      </div>
+      <button class="btn" id="retryBtn">↻ Try Again</button>
+    </section>
+
+    <!-- ====== BATTLE ARENA (Fireboy vs Watergirl) ====== -->
+    <div class="arena" id="arena" title="Tap to make them jump!">
+      <div class="ground"></div>
+
+      <div class="fighter" id="fFire">
+        <div class="stars">💫</div>
+        <div class="facing"><div class="action">
+          <svg class="fSvg" viewBox="0 0 100 150">
+            <defs>
+              <linearGradient id="fireBodyG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ff8a33"/><stop offset="1" stop-color="#df1d1d"/>
+              </linearGradient>
+              <linearGradient id="flameG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#ffd83c"/><stop offset="1" stop-color="#ff6a14"/>
+              </linearGradient>
+            </defs>
+            <g class="leg-l"><path d="M42 110 L40 138" stroke="url(#fireBodyG)" stroke-width="13" stroke-linecap="round" fill="none"/></g>
+            <g class="leg-r"><path d="M58 110 L60 138" stroke="url(#fireBodyG)" stroke-width="13" stroke-linecap="round" fill="none"/></g>
+            <g class="arm-l"><path d="M31 80 C19 84 14 95 14 105" stroke="url(#fireBodyG)" stroke-width="10" stroke-linecap="round" fill="none"/></g>
+            <g class="arm-r"><path d="M69 80 C81 84 86 95 86 105" stroke="url(#fireBodyG)" stroke-width="10" stroke-linecap="round" fill="none"/></g>
+            <path d="M26 74 C26 49 74 49 74 74 C77 97 70 113 50 113 C30 113 23 97 26 74 Z" fill="url(#fireBodyG)"/>
+            <path d="M36 60 C31 67 31 80 35 89 C28 81 28 65 36 60 Z" fill="#ffb472" opacity=".6"/>
+            <path d="M50 5 C59 22 59 33 53 41 C61 37 63 29 65 25 C67 38 62 52 50 52 C38 52 33 38 35 25 C37 29 39 37 47 41 C41 33 41 22 50 5 Z" fill="url(#flameG)"/>
+            <path d="M50 18 C56 28 56 36 52 42 C57 39 58 34 60 31 C61 39 57 48 50 48 C43 48 39 39 40 31 C42 34 43 39 48 42 C44 36 44 28 50 18 Z" fill="#ffe98a"/>
+            <ellipse cx="40" cy="80" rx="8" ry="9.5" fill="#fff6cf"/><ellipse cx="60" cy="80" rx="8" ry="9.5" fill="#fff6cf"/>
+            <circle cx="40.5" cy="82" r="3.4" fill="#3a0c00"/><circle cx="60.5" cy="82" r="3.4" fill="#3a0c00"/>
+            <circle cx="42.2" cy="79.6" r="1.3" fill="#fff"/><circle cx="62.2" cy="79.6" r="1.3" fill="#fff"/>
+            <path d="M41 95 Q50 104 59 95" stroke="#3a0c00" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div></div>
+      </div>
+
+      <div class="fighter" id="fWater">
+        <div class="stars">💫</div>
+        <div class="facing flip"><div class="action">
+          <svg class="fSvg" viewBox="0 0 100 150">
+            <defs>
+              <linearGradient id="waterBodyG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#86ddff"/><stop offset="1" stop-color="#1f86d4"/>
+              </linearGradient>
+            </defs>
+            <g class="leg-l"><path d="M42 110 L40 138" stroke="url(#waterBodyG)" stroke-width="13" stroke-linecap="round" fill="none"/></g>
+            <g class="leg-r"><path d="M58 110 L60 138" stroke="url(#waterBodyG)" stroke-width="13" stroke-linecap="round" fill="none"/></g>
+            <g class="arm-l"><path d="M31 80 C19 84 14 95 14 105" stroke="url(#waterBodyG)" stroke-width="10" stroke-linecap="round" fill="none"/></g>
+            <g class="arm-r"><path d="M69 80 C81 84 86 95 86 105" stroke="url(#waterBodyG)" stroke-width="10" stroke-linecap="round" fill="none"/></g>
+            <path d="M26 74 C26 49 74 49 74 74 C77 97 70 113 50 113 C30 113 23 97 26 74 Z" fill="url(#waterBodyG)"/>
+            <path d="M28 62 C25 41 75 41 72 62 C63 55 37 55 28 62 Z" fill="#bdeeff"/>
+            <ellipse cx="50" cy="40" rx="13" ry="10" fill="#d2f2ff"/>
+            <path d="M62 30 C78 23 88 33 82 44 C80 35 72 33 64 38 Z" fill="#d8f5ff"/>
+            <path d="M36 60 C31 67 31 80 35 89 C28 81 28 65 36 60 Z" fill="#e6f9ff" opacity=".55"/>
+            <ellipse cx="40" cy="80" rx="8" ry="9.5" fill="#f2fcff"/><ellipse cx="60" cy="80" rx="8" ry="9.5" fill="#f2fcff"/>
+            <circle cx="40.5" cy="82" r="3.4" fill="#06354f"/><circle cx="60.5" cy="82" r="3.4" fill="#06354f"/>
+            <circle cx="42.2" cy="79.6" r="1.3" fill="#fff"/><circle cx="62.2" cy="79.6" r="1.3" fill="#fff"/>
+            <circle cx="31" cy="90" r="3.3" fill="#ff9ec4" opacity=".7"/><circle cx="69" cy="90" r="3.3" fill="#ff9ec4" opacity=".7"/>
+            <path d="M41 95 Q50 104 59 95" stroke="#06354f" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+const QUESTIONS = [
+  {"cat": "english", "q": "Choose the correct sentence:", "options": ["She don't like coffee in the morning.", "She doesn't likes coffee in the morning.", "She doesn't like coffee in the morning.", "She not like coffee in the morning."], "answer": 2, "explain": "With third-person singular (she), use <b>doesn't</b> + the base verb <b>like</b>."},
+  {"cat": "critical", "q": "All roses are flowers. Some flowers fade quickly. Therefore:", "options": ["All roses fade quickly.", "Some roses fade quickly.", "No roses fade quickly.", "None of these necessarily follows."], "answer": 3, "explain": "The flowers that fade quickly might not be roses — the premises don't <b>guarantee</b> any conclusion about roses."},
+  {"cat": "english", "q": "Pick the word closest in meaning to <b>“meticulous”</b>:", "options": ["Careless", "Thorough", "Generous", "Rapid"], "answer": 1, "explain": "<b>Meticulous</b> means showing great attention to detail — i.e. <b>thorough</b>."},
+  {"cat": "critical", "q": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much is the ball?", "options": ["$0.10", "$0.05", "$1.00", "$0.15"], "answer": 1, "explain": "If the ball is $0.05, the bat is $1.05 ($1 more), totaling $1.10. The intuitive $0.10 is the classic trap."},
+  {"cat": "english", "q": "Choose the correct word: “The team celebrated ___ victory.”", "options": ["they're", "their", "there", "theirs"], "answer": 1, "explain": "<b>Their</b> is the possessive determiner. “They're” = they are; “there” = a place."},
+  {"cat": "critical", "q": "Which statement is an <b>opinion</b>, not a fact?", "options": ["Water boils at 100°C at sea level.", "The Earth orbits the Sun.", "Chocolate is the best dessert flavor.", "A triangle has three sides."], "answer": 2, "explain": "“Best” is subjective and can't be verified — it expresses a <b>preference</b>, i.e. an opinion."},
+  {"cat": "english", "q": "Identify the correctly punctuated sentence:", "options": ["Lets eat grandma!", "Let's eat, grandma!", "Lets eat, grandma!", "Let's eat grandma!"], "answer": 1, "explain": "“Let's” needs the apostrophe, and the comma prevents you from… eating grandma."},
+  {"cat": "critical", "q": "If it rained, the ground would be wet. The ground is wet. What can we conclude?", "options": ["It definitely rained.", "It definitely did not rain.", "It may have rained, but something else could have wet the ground.", "The ground is dry."], "answer": 2, "explain": "This avoids the fallacy of <b>affirming the consequent</b> — a sprinkler could also wet the ground."},
+  {"cat": "english", "q": "What is the past tense of the verb <b>“to lead”</b> (to guide)?", "options": ["lead", "leaded", "led", "leded"], "answer": 2, "explain": "The past tense is <b>led</b> (pronounced like the metal “lead,” but spelled l-e-d)."},
+  {"cat": "critical", "q": "A survey of gym-goers finds most people who exercise are healthy, so the gym claims exercise caused their health. The flaw is:", "options": ["Small sample size", "Correlation assumed to be causation", "Biased question wording", "There is no flaw"], "answer": 1, "explain": "Healthy people may simply be more likely to exercise — <b>correlation ≠ causation</b>."},
+  {"cat": "english", "q": "Choose the correct verb: <b>Each</b> of the students ___ a textbook.", "options": ["have", "has", "have had", "are having"], "answer": 1, "explain": "The subject <b>each</b> is always singular, so it takes the singular verb <b>has</b>."},
+  {"cat": "critical", "q": "A speaker argues: <b>\"My opponent wants to cut the military budget, so clearly he wants to leave our country defenseless against all enemies.\"</b> Which fallacy is this?", "options": ["Straw man", "Slippery slope", "Circular reasoning", "False dilemma"], "answer": 0, "explain": "It commits the <b>straw man</b> fallacy by distorting a modest budget-cut position into the extreme claim of wanting total defenselessness, then attacking that distortion."},
+  {"cat": "english", "q": "Choose the correct option: By the time we arrived, the movie ___.", "options": ["already started", "has already started", "had already started", "was already starting"], "answer": 2, "explain": "The past perfect (had already started) is needed for an action completed before another past event."},
+  {"cat": "critical", "q": "You can't trust anything Dr. Lee says about climate policy <b>because she drives an expensive car</b>. This is an example of which fallacy?", "options": ["False dilemma", "Ad hominem", "Slippery slope", "Straw man"], "answer": 1, "explain": "It is an <b>ad hominem</b> because it attacks the person's character or circumstances instead of addressing the merits of her actual argument."},
+  {"cat": "english", "q": "Complete the conditional: If it rains tomorrow, we ___ the picnic.", "options": ["will cancel", "would cancel", "cancelled", "would have cancelled"], "answer": 0, "explain": "A <b>first conditional</b> pairs a present-tense <i>if</i>-clause with <b>will</b> + base verb for a likely future result."},
+  {"cat": "critical", "q": "\"Either we ban all cars from the city center, or our streets will be choked with traffic forever.\" Why is this reasoning fallacious?", "options": ["It attacks the arguer rather than the claim", "It assumes what it is trying to prove", "It presents only two options when more exist", "It distorts the opposing view"], "answer": 2, "explain": "This is a <b>false dilemma</b>: it falsely frames the issue as only two extreme choices while ignoring viable middle options like congestion pricing or limited access."},
+  {"cat": "english", "q": "Choose the correct verb: Neither the manager nor the employees ___ aware of the change.", "options": ["was", "is", "were", "has been"], "answer": 2, "explain": "With <b>neither...nor</b>, the verb agrees with the nearer subject, and the plural <b>employees</b> requires <b>were</b>."},
+  {"cat": "critical", "q": "\"The Bible is true because it is the word of God, and we know it is the word of God because the Bible says so.\" Which fallacy does this argument illustrate?", "options": ["Slippery slope", "Straw man", "Circular reasoning", "Ad hominem"], "answer": 2, "explain": "It is <b>circular reasoning</b> because the conclusion (the Bible is true) is used as a premise to support itself, so the argument assumes what it sets out to prove."},
+  {"cat": "english", "q": "Choose the correct option: If I ___ you, I would apologize immediately.", "options": ["am", "was", "were", "would be"], "answer": 2, "explain": "The second conditional uses the subjunctive 'were' for all subjects in hypothetical situations, as in the fixed expression 'If I were you'."},
+  {"cat": "critical", "q": "A debater claims: \"If we allow students to retake one exam, soon they'll demand retakes on everything, then grades will become meaningless, and eventually our diplomas will be worthless.\" The <b>main</b> logical flaw is that the argument:", "options": ["Asserts an unsupported chain of escalating consequences", "Offers only two possible outcomes", "Defines the conclusion in terms of itself", "Insults the students proposing the policy"], "answer": 0, "explain": "This is a <b>slippery slope</b>, which fails by asserting that one modest step will inevitably trigger a chain of increasingly dire outcomes without justifying each link."},
+  {"cat": "english", "q": "Choose the correct option: She ___ here for ten years before she finally moved abroad last spring.", "options": ["has worked", "had been working", "has been working", "is working"], "answer": 1, "explain": "The past perfect continuous (had been working) expresses a continuous action that lasted for a duration up to a specific point in the past, here the moment she moved abroad."},
+  {"cat": "critical", "q": "Consider: \"Of course capital punishment deters crime; if it didn't deter crime, we wouldn't use it as a punishment to deter criminals.\" Beyond simply being unpersuasive, this argument is <b>structurally</b> defective because it:", "options": ["Rejects a position by attacking its proponent", "Smuggles the conclusion into its own premises", "Reduces a spectrum of choices to a binary", "Mischaracterizes the opposing position before refuting it"], "answer": 1, "explain": "It is <b>circular reasoning</b>: the premise that we use it 'to deter' presupposes the very deterrent effect the argument claims to establish, providing no independent support."},
+  {"cat": "english", "q": "Which word is the closest <b>synonym</b> for <b>candid</b>?", "options": ["Frank", "Secretive", "Hesitant", "Polite"], "answer": 0, "explain": "<b>Candid</b> means open and honest in expression, making <b>frank</b> its closest synonym."},
+  {"cat": "critical", "q": "Senator A: \"We should invest more in public transit.\" Senator B: \"Senator A thinks we should waste taxpayer money on empty buses while ignoring our crumbling roads, and besides, he failed economics in college.\" Senator B's reply contains which <b>two</b> fallacies?", "options": ["False dilemma and slippery slope", "Straw man and ad hominem", "Circular reasoning and false dilemma", "Slippery slope and straw man"], "answer": 1, "explain": "B uses a <b>straw man</b> by recasting 'invest in transit' as 'waste money on empty buses,' and an <b>ad hominem</b> by citing A's failing grade instead of his argument."},
+  {"cat": "english", "q": "Which word is the best <b>antonym</b> of <b>abundant</b>?", "options": ["Plentiful", "Scarce", "Wealthy", "Generous"], "answer": 1, "explain": "<b>Abundant</b> means existing in large quantities, so its opposite is <b>scarce</b>, meaning in short supply."},
+  {"cat": "critical", "q": "All cats are mammals. All mammals are animals. Which conclusion <b>necessarily</b> follows?", "options": ["All cats are animals", "All animals are cats", "Some mammals are not animals", "All mammals are cats"], "answer": 0, "explain": "By the <b>transitive property</b> of universal premises, if all cats are mammals and all mammals are animals, then all cats must be animals."},
+  {"cat": "english", "q": "Choose the word that best completes the sentence: The treaty was meant to <b>______</b> tensions between the two nations, not inflame them.", "options": ["Aggravate", "Assuage", "Provoke", "Exacerbate"], "answer": 1, "explain": "<b>Assuage</b> means to ease or soothe, which fits the contrast with \"inflame,\" while the other options (aggravate, provoke, exacerbate) all mean to worsen or stir up."},
+  {"cat": "critical", "q": "\"If it is Sunday, the shop is closed. The shop is closed.\" What can we validly conclude?", "options": ["It is Sunday", "Nothing about whether it is Sunday", "It is not Sunday", "The shop is never open"], "answer": 1, "explain": "Concluding \"it is Sunday\" commits the fallacy of <b>affirming the consequent</b>; the shop could be closed for other reasons, so nothing follows about whether it is Sunday."},
+  {"cat": "english", "q": "Which word is the closest <b>synonym</b> for <b>ephemeral</b>?", "options": ["Eternal", "Fleeting", "Tangible", "Spacious"], "answer": 1, "explain": "<b>Ephemeral</b> describes something lasting a very short time, making <b>fleeting</b> its closest synonym."},
+  {"cat": "critical", "q": "\"All squares are rectangles. This shape is not a rectangle.\" Which conclusion is <b>valid</b>?", "options": ["This shape is a square", "This shape is not a square", "This shape is a rectangle", "Nothing follows"], "answer": 1, "explain": "This is valid <b>modus tollens</b>: since all squares are rectangles, denying that the shape is a rectangle forces the conclusion that it is not a square."},
+  {"cat": "english", "q": "Which word is the best <b>antonym</b> of <b>garrulous</b>?", "options": ["Talkative", "Taciturn", "Cheerful", "Articulate"], "answer": 1, "explain": "<b>Garrulous</b> means excessively talkative, so its opposite is <b>taciturn</b>, meaning reserved or saying little."},
+  {"cat": "critical", "q": "Consider: \"Some doctors are runners. All runners are healthy.\" Which statement <b>must</b> be true?", "options": ["All doctors are healthy", "Some doctors are healthy", "All healthy people are doctors", "No doctors are healthy"], "answer": 1, "explain": "Since some doctors are runners and every runner is healthy, those particular doctors are healthy, so <b>some doctors are healthy</b> is guaranteed."},
+  {"cat": "english", "q": "Choose the most <b>precise</b> word: His <b>______</b> remarks, full of biting wit, left the audience both amused and stung.", "options": ["Mundane", "Acerbic", "Verbose", "Laconic"], "answer": 1, "explain": "<b>Acerbic</b> precisely denotes sharp, biting wit, matching the description, whereas the alternatives describe dullness, wordiness, or brevity."},
+  {"cat": "critical", "q": "A syllogism has true premises and a false conclusion. What does this tell us about its form?", "options": ["The form is valid", "The form must be invalid", "The form could still be valid", "The premises must be false"], "answer": 1, "explain": "A <b>valid</b> form can never lead from true premises to a false conclusion, so true premises plus a false conclusion proves the form is <b>invalid</b>."},
+  {"cat": "english", "q": "Which sentence uses <b>your</b> and <b>you're</b> correctly?", "options": ["Your going to love you're new job.", "You're going to love your new job.", "Your going to love your new job.", "You're going to love you're new job."], "answer": 1, "explain": "<b>You're</b> means <i>you are</i> and <b>your</b> shows possession, so \"You're going to love your new job\" is correct."},
+  {"cat": "critical", "q": "\"No reptiles are warm-blooded. Some pets are reptiles.\" Which conclusion is <b>valid</b>?", "options": ["Some pets are not warm-blooded", "All pets are reptiles", "Some pets are warm-blooded", "No pets are warm-blooded"], "answer": 0, "explain": "Some pets are reptiles, and no reptile is warm-blooded, so those pet-reptiles are not warm-blooded; therefore <b>some pets are not warm-blooded</b> follows validly."},
+  {"cat": "english", "q": "Select the sentence that correctly uses <b>fewer</b> or <b>less</b>.", "options": ["This line is for shoppers with less items.", "There are less than ten people here.", "We need fewer chairs for the meeting.", "I have less books than my sister."], "answer": 2, "explain": "<b>Fewer</b> is used with countable nouns like <i>chairs</i>, whereas <b>less</b> is reserved for uncountable quantities."},
+  {"cat": "critical", "q": "A drawer contains 10 red socks and 10 blue socks, mixed up. In complete darkness, what is the <b>minimum</b> number of socks you must pull out to guarantee a matching pair?", "options": ["2", "3", "11", "20"], "answer": 1, "explain": "With only <b>two colors</b>, the first two socks could differ (one red, one blue), but a third sock must match one of them (pigeonhole principle), so <b>3</b> guarantees a matching pair."},
+  {"cat": "english", "q": "Which sentence correctly uses <b>affect</b> and <b>effect</b>?", "options": ["The new policy will effect everyone, and its affects are unclear.", "The new policy will affect everyone, and its effects are unclear.", "The new policy will affect everyone, and its affects are unclear.", "The new policy will effect everyone, and its effects are unclear."], "answer": 1, "explain": "<b>Affect</b> is the verb meaning to influence and <b>effect</b> is the noun meaning a result, so \"affect everyone\" and \"its effects\" are both correct."},
+  {"cat": "critical", "q": "If 5 machines take 5 minutes to make 5 widgets, how long would 100 machines take to make 100 widgets?", "options": ["100 minutes", "20 minutes", "5 minutes", "1 minute"], "answer": 2, "explain": "Each machine makes one widget in 5 minutes, so 100 machines working in parallel each make one widget in the same <b>5 minutes</b>."},
+  {"cat": "english", "q": "Which sentence places the apostrophe correctly for a plural possessive?", "options": ["The students' projects were displayed in the hall.", "The student's projects were displayed in the hall, where many students worked.", "The students projects' were displayed in the hall.", "The studen'ts projects were displayed in the hall."], "answer": 0, "explain": "For a plural noun ending in s, the possessive is formed by adding an apostrophe after the s, giving students'."},
+  {"cat": "critical", "q": "When Maria was 6 years old, her sister was <b>half</b> her age. Maria is now 70. How old is her sister?", "options": ["35", "64", "67", "73"], "answer": 2, "explain": "At age 6 the sister was 3, a constant <b>3-year gap</b>, so when Maria is 70 her sister is 67."},
+  {"cat": "english", "q": "Which sentence is punctuated correctly?", "options": ["Although it was raining, we decided to go for a walk however we brought umbrellas.", "Although it was raining we decided to go for a walk; however, we brought umbrellas.", "Although it was raining, we decided to go for a walk; however, we brought umbrellas.", "Although it was raining, we decided to go for a walk, however we brought umbrellas."], "answer": 2, "explain": "A comma follows the introductory clause and a semicolon plus comma correctly joins two independent clauses linked by the conjunctive adverb however."},
+  {"cat": "critical", "q": "A lily pad doubles in size every day and covers an entire lake on day 48. On which day did it cover <b>half</b> the lake?", "options": ["Day 24", "Day 47", "Day 46", "Day 12"], "answer": 1, "explain": "Since the area <b>doubles</b> each day, the day before full coverage it was exactly half, which is <b>day 47</b>."},
+  {"cat": "english", "q": "My car broke down, so I had to <b>call off</b> the meeting. What does \"call off\" mean here?", "options": ["Cancel", "Postpone briefly", "Telephone someone", "Shout loudly"], "answer": 0, "explain": "The phrasal verb <b>call off</b> means to <b>cancel</b> a planned event, so the meeting was cancelled."},
+  {"cat": "critical", "q": "Two fair six-sided dice are rolled. What is the probability that the sum equals <b>7</b>?", "options": ["1/12", "1/6", "1/9", "1/7"], "answer": 1, "explain": "Six of the 36 equally likely outcomes sum to 7 (1-6, 2-5, 3-4 and reverses), giving 6/36 = <b>1/6</b>."},
+  {"cat": "english", "q": "Choose the correct article: \"She is ___ honest person who always tells the truth.\"", "options": ["a", "an", "the", "no article"], "answer": 1, "explain": "\"Honest\" begins with a silent \"h\" and a vowel sound, so it takes <b>an</b>."},
+  {"cat": "critical", "q": "A family has two children. You are told that <b>at least one is a boy</b>. Assuming each child is independently equally likely to be a boy or girl, what is the probability that <b>both</b> are boys?", "options": ["1/2", "1/3", "1/4", "2/3"], "answer": 1, "explain": "The equally likely cases consistent with 'at least one boy' are BB, BG, GB, and only BB has two boys, giving <b>1/3</b>."},
+  {"cat": "english", "q": "Complete with the correct preposition: \"The committee will decide ___ the matter tomorrow.\"", "options": ["on", "at", "of", "to"], "answer": 0, "explain": "The verb \"decide\" collocates with <b>on</b> when choosing about a matter."},
+  {"cat": "critical", "q": "Complete the sequence: 2, 4, 8, 16, <b>?</b>", "options": ["18", "24", "32", "20"], "answer": 2, "explain": "Each term is <b>doubled</b> to get the next, so 16 × 2 = <b>32</b>."},
+];
+
+const $ = id => document.getElementById(id);
+let idx = 0, score = 0, correctCount = 0, locked = false;
+
+const startSec = $("start"), quizSec = $("quiz"), resultSec = $("result");
+
+$("qTotal").textContent = QUESTIONS.length;
+
+$("startBtn").onclick = beginQuiz;
+$("retryBtn").onclick = beginQuiz;
+$("nextBtn").onclick = () => { idx++; idx < QUESTIONS.length ? renderQuestion() : showResult(); };
+
+function beginQuiz(){
+  idx = 0; score = 0; correctCount = 0;
+  $("scoreNow").textContent = 0;
+  startSec.classList.add("hidden");
+  resultSec.classList.add("hidden");
+  quizSec.classList.remove("hidden");
+  renderQuestion();
+}
+
+function renderQuestion(){
+  locked = false;
+  const item = QUESTIONS[idx];
+  $("qNow").textContent = idx + 1;
+  $("bar").style.width = (idx / QUESTIONS.length) * 100 + "%";
+  $("qText").innerHTML = item.q;
+
+  const tag = $("catTag");
+  if(item.cat === "english"){ tag.textContent = "English"; tag.className = "cat-tag cat-english"; }
+  else { tag.textContent = "Critical Thinking"; tag.className = "cat-tag cat-critical"; }
+
+  const exp = $("explain");
+  exp.className = "explain";
+  exp.innerHTML = "";
+
+  const next = $("nextBtn");
+  next.classList.remove("show");
+  next.textContent = (idx === QUESTIONS.length - 1) ? "See Results 🏁" : "Next →";
+
+  const box = $("opts");
+  box.innerHTML = "";
+  const letters = ["A","B","C","D"];
+  item.options.forEach((text, i) => {
+    const b = document.createElement("button");
+    b.className = "opt";
+    b.innerHTML = `<span class="key">${letters[i]}</span><span>${text}</span><span class="mark">${'✓'}</span>`;
+    b.onclick = () => choose(i, b);
+    box.appendChild(b);
+  });
+}
+
+function choose(i, btn){
+  if(locked) return;
+  locked = true;
+  const item = QUESTIONS[idx];
+  const buttons = [...$("opts").children];
+  buttons.forEach(b => b.disabled = true);
+
+  const correctBtn = buttons[item.answer];
+
+  if(i === item.answer){
+    btn.classList.add("correct");
+    score++; correctCount++;
+    bumpScore();
+  } else {
+    btn.classList.add("wrong");
+    btn.querySelector(".mark").textContent = "✗";
+    correctBtn.classList.add("correct");           // reveal the right answer in green
+  }
+
+  const exp = $("explain");
+  exp.innerHTML = "<b>Why:</b> " + item.explain;
+  exp.classList.add("show");
+
+  $("bar").style.width = ((idx + 1) / QUESTIONS.length) * 100 + "%";
+  $("nextBtn").classList.add("show");
+}
+
+function bumpScore(){
+  const el = $("scoreNow");
+  el.textContent = score;
+  el.parentElement.animate(
+    [{transform:"scale(1)"},{transform:"scale(1.35)"},{transform:"scale(1)"}],
+    {duration:380, easing:"ease-out"}
+  );
+}
+
+function showResult(){
+  quizSec.classList.add("hidden");
+  resultSec.classList.remove("hidden");
+
+  const total = QUESTIONS.length;
+  const pct = Math.round((correctCount / total) * 100);
+  $("rCorrect").textContent = correctCount;
+  $("rWrong").textContent = total - correctCount;
+  $("rPoints").textContent = score;
+  $("ratio").textContent = correctCount + " / " + total;
+
+  // animate ring + percent
+  const fill = $("ringFill");
+  const circ = 465;
+  requestAnimationFrame(() => { fill.style.strokeDashoffset = circ - (circ * pct / 100); });
+
+  let cur = 0;
+  const pctEl = $("pct");
+  const step = () => {
+    cur += Math.max(1, Math.round(pct / 30));
+    if(cur >= pct) cur = pct;
+    pctEl.textContent = cur + "%";
+    if(cur < pct) requestAnimationFrame(step);
+  };
+  step();
+
+  let v, s;
+  if(pct === 100){ v = "🏆 Flawless Victory!"; s = "Perfect score — your mind is razor-sharp."; }
+  else if(pct >= 80){ v = "🌟 Outstanding!"; s = "Excellent command of English and logic."; }
+  else if(pct >= 60){ v = "👍 Solid Effort"; s = "Good work — a little polish and you're elite."; }
+  else if(pct >= 40){ v = "🧗 Keep Climbing"; s = "You're getting there. Review and retry!"; }
+  else { v = "🌱 Just the Start"; s = "Every expert was once a beginner. Try again!"; }
+  $("verdict").textContent = v;
+  $("subverdict").textContent = s;
+}
+
+/* ===== Fireboy vs Watergirl — live battle arena (roam + play-fight) ===== */
+const arena = $("arena");
+function mkFighter(id){
+  const el = $(id);
+  return { el, facing: el.querySelector(".facing"), x: 0, w: el.offsetWidth || 58 };
+}
+const fire = mkFighter("fFire");
+const water = mkFighter("fWater");
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rand = (a, b) => a + Math.random() * (b - a);
+const aw = () => arena.clientWidth;
+const clampX = (f, x) => Math.max(4, Math.min(aw() - f.w - 4, x));
+
+function place(f, x){ f.x = clampX(f, x); f.el.style.left = f.x + "px"; }
+function face(f, towardX){ f.facing.classList.toggle("flip", towardX < f.x); }
+
+async function walkTo(f, x){
+  x = clampX(f, x);
+  face(f, x);
+  f.el.classList.add("walking");
+  f.x = x; f.el.style.left = x + "px";
+  await sleep(840);
+  f.el.classList.remove("walking");
+}
+async function act(f, cls, ms){ f.el.classList.add(cls); await sleep(ms); f.el.classList.remove(cls); }
+function actNoWait(f, cls, ms){ f.el.classList.add(cls); setTimeout(() => f.el.classList.remove(cls), ms); }
+
+function burst(px){
+  const d = document.createElement("div");
+  d.className = "impact";
+  d.textContent = ["💥","💢","✨","⭐","🌟"][Math.floor(Math.random() * 5)];
+  d.style.left = px + "px";
+  d.style.bottom = "64px";
+  arena.appendChild(d);
+  requestAnimationFrame(() => d.classList.add("go"));
+  setTimeout(() => d.remove(), 540);
+}
+
+async function attack(att, def){
+  face(att, def.x); face(def, att.x);
+  const move = Math.random() < 0.5 ? "punch" : "kick";
+  att.el.classList.add("lunge", move);
+  await sleep(150);
+  burst((att.x + def.x) / 2 + att.w / 2);
+  def.el.classList.add("hurt");
+  const dir = def.x > att.x ? 1 : -1;
+  place(def, def.x + dir * 18);
+  await sleep(300);
+  att.el.classList.remove("lunge", move);
+  def.el.classList.remove("hurt");
+}
+
+async function fightSequence(){
+  const W = aw(), mid = W / 2;
+  await Promise.all([ walkTo(fire, mid - 46), walkTo(water, mid + 46 - water.w) ]);
+  const rounds = 2 + Math.floor(Math.random() * 3);
+  for(let r = 0; r < rounds; r++){
+    const att = Math.random() < 0.5 ? fire : water;
+    await attack(att, att === fire ? water : fire);
+    await sleep(120);
+  }
+  const loser = Math.random() < 0.5 ? fire : water;
+  const winner = loser === fire ? water : fire;
+  loser.el.classList.add("dizzy");
+  actNoWait(winner, "jump", 620);
+  await sleep(520);
+  await Promise.all([ walkTo(fire, 8), walkTo(water, W - water.w - 8) ]);
+  loser.el.classList.remove("dizzy");
+}
+
+async function idleAntics(){
+  const W = aw(), roll = Math.random();
+  if(roll < 0.5){
+    await Promise.all([ walkTo(fire, rand(6, W * 0.45)), walkTo(water, rand(W * 0.52, W - water.w - 6)) ]);
+  } else if(roll < 0.72){
+    await act(Math.random() < 0.5 ? fire : water, "jump", 640);
+  } else if(roll < 0.88){
+    await act(Math.random() < 0.5 ? fire : water, "spin", 620);
+  } else {
+    actNoWait(fire, "jump", 640); await act(water, "jump", 640);
+  }
+  await sleep(260 + Math.random() * 500);
+}
+
+async function director(){
+  fire.w = fire.el.offsetWidth || 58;
+  water.w = water.el.offsetWidth || 58;
+  place(fire, 14);
+  place(water, aw() - water.w - 14);
+  water.facing.classList.add("flip");
+  while(true){
+    if(Math.random() < 0.45) await fightSequence();
+    else await idleAntics();
+  }
+}
+arena.onclick = () => { actNoWait(fire, "jump", 620); actNoWait(water, "jump", 620); };
+window.addEventListener("resize", () => { place(fire, fire.x); place(water, water.x); });
+director();
+</script>
+</body>
+</html>
